@@ -45,6 +45,7 @@ int main(void) {
         if (!(GPIOB->IDR  & GPIO_IDR_ID13)) {
             GPIOC->ODR |= GPIO_ODR_OD13;
             GPIOB->ODR |= GPIO_ODR_OD9;
+        	//GPIOB->BSRR |= GPIO_BSRR_BS9;
             delay(500000);
             GPIOC->ODR &= ~GPIO_ODR_OD13;
             GPIOB->ODR &= ~GPIO_ODR_OD9;
