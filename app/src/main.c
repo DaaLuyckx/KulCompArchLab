@@ -68,9 +68,39 @@ void segments(int n){
 }
 
 void clear_segments(){
+
 //Alle segmenten worden uitgezet.
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
 	GPIOB->ODR &= ~(GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+
+}
+
+void number_to_segments(int n){
+// Zet het getal om in de segmenten per module
+	int thousand = (n/1000)%10;
+	int hundred = (n/100)%10;
+	int ten = (n/10)%10;
+	int unit = n%10;
+
+	//00
+	GPIOA-> ODR &= ~GPIO_ODR_OD8;
+	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+	segments(thousand);
+
+	//01
+	GPIOA-> ODR &= ~GPIO_ODR_OD8;
+	GPIOA-> ODR |= GPIO_ODR_OD15;
+	segments(hundred);
+
+	//10
+	GPIOA-> ODR |= GPIO_ODR_OD8;
+	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+	segments(ten);
+
+	//00
+	GPIOA-> ODR |= GPIO_ODR_OD8;
+	GPIOA-> ODR |= GPIO_ODR_OD15;
+	segments(unit);
 
 }
 
@@ -121,19 +151,10 @@ int main(void) {
 
 
   while (1) {
-
-	  GPIOA->ODR |= GPIO_ODR_OD8;
-	  GPIOA->ODR |= GPIO_ODR_OD15;
-
-	  for(int i = 0; i<=9; i++){
-		  segments(i);
-		  delay(2500000);
-		  clear_segments();
-		  delay(2500000);
-
+	  number_to_segments(1234);
 	  }
 
-  }
+ }
 
-}
+
 
