@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
+int number=1234;
+int tick;
+
 void delay(unsigned int n){
 	volatile unsigned int delay = n;
 	while (delay--);
@@ -67,7 +70,7 @@ void segments(int n){
 
 }
 
-void clear(){
+void clear_segments(){
 
 //Alle segmenten worden uitgezet.
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
@@ -82,29 +85,39 @@ void number_to_segments(int n){
 	int ten = (n/10)%10;
 	int unit = n%10;
 
+//Dit stukje is omdat het een klok is (max waarden van de 'minuten, en 'uren' aanpassen)
+	if (ten == 6 && unit == 0){
+		unit = 0;
+		hundred++;
+	}
+	if (thousand == 2 && hundred == 4){
+		thousand, hundred = 0;
+	}
+
+//Stuur de waardes naar
 	//00
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(thousand);
-	clear();
+	clear_segments();
 
 	//01
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(hundred);
-	clear();
+	clear_segments();
 
 	//10
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(ten);
-	clear();
+	clear_segments();
 
 	//00
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(unit);
-	clear();
+	clear_segments();
 
 }
 
@@ -151,12 +164,27 @@ int main(void) {
 	GPIOA->MODER |= GPIO_MODER_MODE15_0;
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT15;
 
+	//buttons
+    GPIOB->MODER &= ~GPIO_MODER_MODE13_Msk;
+    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPD13_0;
+
+    GPIOB->MODER &= ~GPIO_MODER_MODE14_Msk;
+    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
+
 
   while (1) {
-	  number_to_segments(1234);
+	  tick = 250;
+	  while(tick!=0){
+		  number_to_segments(number);
+		  tick--;
 	  }
+	  number++;
 
- }
+  }
+
+}
 
 
 
