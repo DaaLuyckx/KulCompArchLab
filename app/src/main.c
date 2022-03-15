@@ -67,7 +67,7 @@ void segments(int n){
 
 }
 
-void clear_segments(){
+void clear(){
 
 //Alle segmenten worden uitgezet.
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
@@ -86,21 +86,25 @@ void number_to_segments(int n){
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(thousand);
+	clear();
 
 	//01
-	GPIOA-> ODR &= ~GPIO_ODR_OD8;
-	GPIOA-> ODR |= GPIO_ODR_OD15;
-	segments(hundred);
-
-	//10
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+	segments(hundred);
+	clear();
+
+	//10
+	GPIOA-> ODR &= ~GPIO_ODR_OD8;
+	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(ten);
+	clear();
 
 	//00
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(unit);
+	clear();
 
 }
 
@@ -146,8 +150,6 @@ int main(void) {
 	GPIOA->MODER &= ~GPIO_MODER_MODE15_Msk;
 	GPIOA->MODER |= GPIO_MODER_MODE15_0;
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT15;
-
-
 
 
   while (1) {
