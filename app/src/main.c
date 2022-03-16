@@ -7,8 +7,10 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
-int number = 1204;
+int number = 0;
 int tick = 0;
+int toggle_A = 0;
+int toggle_B = 0;
 
 void delay(unsigned int n){
 	volatile unsigned int delay = n;
@@ -137,20 +139,14 @@ void SysTick_Handler(void){
 void EXTI15_10_IRQHandler(void){
 
     if(EXTI->PR1 & EXTI_PR1_PIF14){
-    	while(EXTI->PR1 & EXTI_PR1_PIF14)
-
-
+    	toggle_A++;
         EXTI->PR1 = EXTI_PR1_PIF14;
     }
 
     if(EXTI->PR1 & EXTI_PR1_PIF13){
-    	GPIOC->ODR |= GPIO_ODR_OD13;
-        GPIOB->ODR |= GPIO_ODR_OD9;
-        delay(50);
-        GPIOC->ODR &= ~GPIO_ODR_OD13;
-        GPIOB->ODR &= ~GPIO_ODR_OD9;
-        delay(50);
+    	toggle_B++;
         EXTI->PR1 = EXTI_PR1_PIF13;
+        delay(200);
     }
 }
 
@@ -241,22 +237,37 @@ int main(void){
 	NVIC_SetPriority(EXTI15_10_IRQn, 129);
 	NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-
-	//Led1
-	GPIOB->MODER &= ~GPIO_MODER_MODE9_Msk; //Alle bits van pin9 (blok B) op 0 zetten
-	GPIOB->MODER |= GPIO_MODER_MODE9_0;    //Bit 0 van pin 9 hoog maken (=output)
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT9;     //Laag zetten voor push pull
-
-	//Led2
-	GPIOC->MODER &= ~GPIO_MODER_MODE13_Msk; //Alle bits van pin 13 (blok C) op 0 zetten
-	GPIOC->MODER |= GPIO_MODER_MODE13_0;    //Bit 0 van pin 13 hoog maken (=output)
-	GPIOC->OTYPER &= ~GPIO_OTYPER_OT13;     //Laag zetten voor push pull
-
     while(1){
-    	while(tick !=60000){
-    		number_to_segments(number);
+    	switch (toggle_A){
+    		case 0:
+				number_to_segments(number);
+				if(tick == 60000){
+					number++;
+					tick = 0;
+				}
+				break;
+
+    		case 1:
+    			number_to_segments(number);
+    			if (toggle_B){
+    				number += 100;
+    				toggle_B = 0;
+    			}
+				break;
+
+    		case 2:
+    			number_to_segments(number);
+    			if (toggle_B){
+    				number ++;
+    				toggle_B = 0;
+    			}
+    			break;
+
+    		case 3:
+    			toggle_A = 0;
+    			tick = 0;
+    			delay(2);
+    			break;
     	}
-    	number++;
-    	tick = 0;
     }
 }
