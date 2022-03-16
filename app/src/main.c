@@ -107,35 +107,35 @@ void number_to_segments(int n){
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(thousand);
-	delay(1);
+	//delay(1);
 	clear_segments();
 
 	//01
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(hundred);
-	delay(1);
+	//delay(1);
 	clear_segments();
 
 	//10
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(ten);
-	delay(1);
+	//delay(1);
 	clear_segments();
 
 	//11
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(unit);
-	delay(1);
+	//delay(1);
 	clear_segments();
 
 }
 
 void SysTick_Handler(void){
     tick++;
-	number_to_segments(number);
+	//number_to_segments(number);
 }
 
 int main(void){
@@ -196,17 +196,17 @@ int main(void){
     NVIC_SetPriority(SysTick_IRQn, 128);
     NVIC_EnableIRQ(SysTick_IRQn);
 
-    /*while(1){
+    while(1){
     	while(tick !=1000){
     		number_to_segments(number);
     	}
     	number++;
     	tick = 0;
-    }*/
+    }
 
-    while(1){
+    /*while(1){
     	number++;
     	delay(100);
-    }
+    }*/
 
 }
