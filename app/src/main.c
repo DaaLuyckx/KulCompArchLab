@@ -167,7 +167,7 @@ int main(void){
 	GPIOB->MODER |= GPIO_MODER_MODE2_0;
 	GPIOB->OTYPER &= ~GPIO_OTYPER_OT2;
 
-	//mux
+	//multiplexer
 	GPIOA->MODER &= ~GPIO_MODER_MODE8_Msk;
 	GPIOA->MODER |= GPIO_MODER_MODE8_0;
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT8;
@@ -191,12 +191,18 @@ int main(void){
     NVIC_SetPriority(SysTick_IRQn, 128);
     NVIC_EnableIRQ(SysTick_IRQn);
 
-    while(1){
-    	while(tick !=10){
+    /*while(1){
+    	while(tick !=100){
     		number_to_segments(number);
     	}
     	number++;
     	tick = 0;
+    }*/
+
+    while(1){
+    	number_to_segments(number);
+    	number++;
+    	delay(100);
     }
 
 }
