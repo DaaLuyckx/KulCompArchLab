@@ -137,22 +137,19 @@ void SysTick_Handler(void){
 void EXTI15_10_IRQHandler(void){
 
     if(EXTI->PR1 & EXTI_PR1_PIF14){
-    	GPIOC->ODR |= GPIO_ODR_OD13;
-        GPIOB->ODR |= GPIO_ODR_OD9;
-        delay(2500000);
-        GPIOC->ODR &= ~GPIO_ODR_OD13;
-        GPIOB->ODR &= ~GPIO_ODR_OD9;
-        delay(2500000);
+    	while(EXTI->PR1 & EXTI_PR1_PIF14)
+
+
         EXTI->PR1 = EXTI_PR1_PIF14;
     }
 
     if(EXTI->PR1 & EXTI_PR1_PIF13){
     	GPIOC->ODR |= GPIO_ODR_OD13;
         GPIOB->ODR |= GPIO_ODR_OD9;
-        delay(250000);
+        delay(50);
         GPIOC->ODR &= ~GPIO_ODR_OD13;
         GPIOB->ODR &= ~GPIO_ODR_OD9;
-        delay(250000);
+        delay(50);
         EXTI->PR1 = EXTI_PR1_PIF13;
     }
 }
@@ -240,9 +237,20 @@ int main(void){
 		//Falling edge interrupt aanzetten
 	EXTI->FTSR1 |= EXTI_FTSR1_FT13;
 	EXTI->IMR1 |= EXTI_IMR1_IM13;
-		//Interrupt aanzetten met een prioriteit van 128
-	NVIC_SetPriority(EXTI15_10_IRQn, 128);
+		//Interrupt aanzetten met een prioriteit van 129
+	NVIC_SetPriority(EXTI15_10_IRQn, 129);
 	NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+
+	//Led1
+	GPIOB->MODER &= ~GPIO_MODER_MODE9_Msk; //Alle bits van pin9 (blok B) op 0 zetten
+	GPIOB->MODER |= GPIO_MODER_MODE9_0;    //Bit 0 van pin 9 hoog maken (=output)
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT9;     //Laag zetten voor push pull
+
+	//Led2
+	GPIOC->MODER &= ~GPIO_MODER_MODE13_Msk; //Alle bits van pin 13 (blok C) op 0 zetten
+	GPIOC->MODER |= GPIO_MODER_MODE13_0;    //Bit 0 van pin 13 hoog maken (=output)
+	GPIOC->OTYPER &= ~GPIO_OTYPER_OT13;     //Laag zetten voor push pull
 
     while(1){
     	while(tick !=60000){
