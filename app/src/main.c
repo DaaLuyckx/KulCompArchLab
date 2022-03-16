@@ -106,28 +106,24 @@ void number_to_segments(int n){
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(thousand);
-	//delay(1);
 	clear_segments();
 
 	//01
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR &= ~GPIO_ODR_OD15;
 	segments(hundred);
-	//delay(1);
 	clear_segments();
 
 	//10
 	GPIOA-> ODR &= ~GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(ten);
-	//delay(1);
 	clear_segments();
 
 	//11
 	GPIOA-> ODR |= GPIO_ODR_OD8;
 	GPIOA-> ODR |= GPIO_ODR_OD15;
 	segments(unit);
-	//delay(1);
 	clear_segments();
 }
 
@@ -278,7 +274,7 @@ int main(void){
     			GPIOB->ODR &= ~GPIO_ODR_OD9;
     			toggle_A = 0;
     			tick = 0;
-    			delay(2);
+    			delay(10);
     			break;
     	}
     }
