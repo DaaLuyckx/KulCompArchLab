@@ -7,12 +7,17 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
-int number=1234;
-int tick;
+int number = 0;
+int tick = 0;
 
 void delay(unsigned int n){
 	volatile unsigned int delay = n;
-	while (delay--);
+	while (delay){
+		if (tick){
+			delay--;
+			tick = 0;
+		}
+	}
 }
 
 void segments(int n){
@@ -87,11 +92,14 @@ void number_to_segments(int n){
 
 //Dit stukje is omdat het een klok is (max waarden van de 'minuten, en 'uren' aanpassen)
 	if (ten == 6 && unit == 0){
-		unit = 0;
+		ten = 0;
 		hundred++;
+		number = (thousand*1000+hundred*100+ten*10+unit);
 	}
 	if (thousand == 2 && hundred == 4){
-		thousand, hundred = 0;
+		thousand = 0;
+		hundred = 0;
+		number = (thousand*1000+hundred*100+ten*10+unit);
 	}
 
 //Stuur de waardes naar
@@ -121,7 +129,11 @@ void number_to_segments(int n){
 
 }
 
-int main(void) {
+void SysTick_Handler(void){
+    tick++;
+}
+
+int main(void){
 	//klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
@@ -173,18 +185,18 @@ int main(void) {
     GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;
     GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
 
+    //systick configureren + interupt aanzetten + prioriteit geven
+    SysTick_Config(48000);
 
-  while (1) {
-	  tick = 250;
-	  while(tick!=0){
-		  number_to_segments(number);
-		  tick--;
-	  }
-	  number++;
+    NVIC_SetPriority(SysTick_IRQn, 128);
+    NVIC_EnableIRQ(SysTick_IRQn);
 
-  }
+    while(1){
+    	while(tick !=10){
+    		number_to_segments(number);
+    	}
+    	number++;
+    	tick = 0;
+    }
 
 }
-
-
-
