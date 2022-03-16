@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stm32l4xx.h>
 
-int number = 0;
+int number = 1204;
 int tick = 0;
 
 void delay(unsigned int n){
@@ -72,7 +72,6 @@ void segments(int n){
 			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
 			break;
 	}
-
 }
 
 void clear_segments(){
@@ -80,7 +79,6 @@ void clear_segments(){
 //Alle segmenten worden uitgezet.
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
 	GPIOB->ODR &= ~(GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
-
 }
 
 void number_to_segments(int n){
@@ -100,7 +98,7 @@ void number_to_segments(int n){
 		thousand = 0;
 		hundred = 0;
 		number = (thousand*1000+hundred*100+ten*10+unit);
-	}
+}
 
 //Stuur de waardes naar
 	//00
@@ -130,18 +128,17 @@ void number_to_segments(int n){
 	segments(unit);
 	//delay(1);
 	clear_segments();
-
 }
 
 void SysTick_Handler(void){
     tick++;
-	//number_to_segments(number);
 }
 
 int main(void){
 	//klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 
 	//segmenten
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
@@ -190,6 +187,18 @@ int main(void){
     GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD14_Msk;
     GPIOB->PUPDR |= GPIO_PUPDR_PUPD14_0;
 
+    //interrupts buttons
+    	// Pin 14 van GPIOB routeren naar de EXTI
+    SYSCFG->EXTICR[3] &= ~SYSCFG_EXTICR4_EXTI14_Msk;
+    SYSCFG->EXTICR[3] |= SYSCFG_EXTICR4_EXTI14_PB;
+    	// Falling edge interrupt aanzetten
+    EXTI->FTSR1 |= EXTI_FTSR1_FT14;
+    EXTI->IMR1 |= EXTI_IMR1_IM14;
+    	// Interrupt aanzetten met een prioriteit van 128
+    NVIC_SetPriority(EXTI15_10_IRQn,300000000000);
+    NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+
     //systick configureren + interupt aanzetten + prioriteit geven
     SysTick_Config(48000);
 
@@ -197,16 +206,10 @@ int main(void){
     NVIC_EnableIRQ(SysTick_IRQn);
 
     while(1){
-    	while(tick !=1000){
+    	while(tick !=60000){
     		number_to_segments(number);
     	}
     	number++;
     	tick = 0;
     }
-
-    /*while(1){
-    	number++;
-    	delay(100);
-    }*/
-
 }
