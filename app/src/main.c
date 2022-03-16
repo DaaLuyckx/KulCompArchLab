@@ -77,7 +77,6 @@ void segments(int n){
 }
 
 void clear_segments(){
-
 //Alle segmenten worden uitgezet.
 	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
 	GPIOB->ODR &= ~(GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
@@ -137,7 +136,6 @@ void SysTick_Handler(void){
 }
 
 void EXTI15_10_IRQHandler(void){
-
     if(EXTI->PR1 & EXTI_PR1_PIF14){
     	toggle_A++;
         EXTI->PR1 = EXTI_PR1_PIF14;
@@ -146,16 +144,26 @@ void EXTI15_10_IRQHandler(void){
     if(EXTI->PR1 & EXTI_PR1_PIF13){
     	toggle_B++;
         EXTI->PR1 = EXTI_PR1_PIF13;
-        delay(200);
     }
+    delay(250);
 }
-
 
 int main(void){
 	//klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+
+	//Leds
+	GPIOB->MODER &= ~GPIO_MODER_MODE9_Msk;
+	GPIOB->MODER |= GPIO_MODER_MODE9_0;
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT9;
+
+	GPIOC->MODER &= ~GPIO_MODER_MODE13_Msk;
+	GPIOC->MODER |= GPIO_MODER_MODE13_0;
+	GPIOC->OTYPER &= ~GPIO_OTYPER_OT13;
+
 
 	//segmenten
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
@@ -248,6 +256,7 @@ int main(void){
 				break;
 
     		case 1:
+    			GPIOC->ODR |= GPIO_ODR_OD13;
     			number_to_segments(number);
     			if (toggle_B){
     				number += 100;
@@ -256,6 +265,8 @@ int main(void){
 				break;
 
     		case 2:
+    			GPIOC->ODR &= ~GPIO_ODR_OD13;
+    			GPIOB->ODR |= GPIO_ODR_OD9;
     			number_to_segments(number);
     			if (toggle_B){
     				number ++;
@@ -264,6 +275,7 @@ int main(void){
     			break;
 
     		case 3:
+    			GPIOB->ODR &= ~GPIO_ODR_OD9;
     			toggle_A = 0;
     			tick = 0;
     			delay(2);
