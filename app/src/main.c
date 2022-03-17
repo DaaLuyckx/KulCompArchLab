@@ -12,7 +12,7 @@ int tick = 0;
 int toggle_A = 0;
 int toggle_B = 0;
 
-void delay(unsigned int n){
+/*void delay(unsigned int n){
 	volatile unsigned int delay = n;
 	while (delay){
 		if (tick){
@@ -20,7 +20,7 @@ void delay(unsigned int n){
 			tick = 0;
 		}
 	}
-}
+}*/
 
 void delay(unsigned int n){  //deze sebiet is testen.
 	volatile unsigned int delay = n;
@@ -137,6 +137,7 @@ void SysTick_Handler(void){
 }
 
 void EXTI15_10_IRQHandler(void){
+	delay(1000000);
     if(EXTI->PR1 & EXTI_PR1_PIF14){
     	toggle_A++;
         EXTI->PR1 = EXTI_PR1_PIF14;
@@ -146,7 +147,6 @@ void EXTI15_10_IRQHandler(void){
     	toggle_B++;
         EXTI->PR1 = EXTI_PR1_PIF13;
     }
-    delay(250);
 }
 
 int main(void){
@@ -242,7 +242,7 @@ int main(void){
 		//Falling edge interrupt aanzetten
 	EXTI->FTSR1 |= EXTI_FTSR1_FT13;
 	EXTI->IMR1 |= EXTI_IMR1_IM13;
-		//Interrupt aanzetten met een prioriteit van 129
+		//Interrupt aanzetten met een prioriteit van 127
 	NVIC_SetPriority(EXTI15_10_IRQn, 127);
 	NVIC_EnableIRQ(EXTI15_10_IRQn);
 
@@ -250,7 +250,7 @@ int main(void){
     	switch (toggle_A){
     		case 0:
 				number_to_segments(number);
-				if(tick == 60000){
+				if(tick == 1000){
 					number++;
 					tick = 0;
 				}
@@ -279,7 +279,7 @@ int main(void){
     			GPIOB->ODR &= ~GPIO_ODR_OD9;
     			toggle_A = 0;
     			tick = 0;
-    			delay(10);
+    			delay(100000);
     			break;
     	}
     }
