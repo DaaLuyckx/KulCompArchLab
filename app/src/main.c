@@ -22,6 +22,11 @@ void delay(unsigned int n){
 	}
 }
 
+void delay(unsigned int n){  //deze sebiet is testen.
+	volatile unsigned int delay = n;
+	while (delay--);
+}
+
 void segments(int n){
 //Hier zeg ik welke segmenten moeten aangaan bij welk cijfer.
 	switch (n){
@@ -238,7 +243,7 @@ int main(void){
 	EXTI->FTSR1 |= EXTI_FTSR1_FT13;
 	EXTI->IMR1 |= EXTI_IMR1_IM13;
 		//Interrupt aanzetten met een prioriteit van 129
-	NVIC_SetPriority(EXTI15_10_IRQn, 129);
+	NVIC_SetPriority(EXTI15_10_IRQn, 127);
 	NVIC_EnableIRQ(EXTI15_10_IRQn);
 
     while(1){
