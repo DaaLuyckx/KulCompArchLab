@@ -3,6 +3,9 @@
  * @version 0.1
  */
 
+//Dit programma was eigenlijk niet de bedoeling, de display moest eigenlijk in de systick en de buttons moesten niet met interrupts.
+//In het ander programma doe ik dit.
+
 #include <stdint.h>
 #include <stm32l4xx.h>
 
@@ -10,16 +13,6 @@ int number = 0;
 int tick = 0;
 int toggle_A = 0;
 int toggle_B = 0;
-
-/*void delay(unsigned int n){
-	volatile unsigned int delay = n;
-	while (delay){
-		if (tick){
-			delay--;
-			tick = 0;
-		}
-	}
-}*/
 
 void delay(unsigned int n){  //deze sebiet is testen.
 	volatile unsigned int delay = n;
@@ -136,10 +129,9 @@ void SysTick_Handler(void){
 }
 
 void EXTI15_10_IRQHandler(void){
-	delay(1000000);
     if(EXTI->PR1 & EXTI_PR1_PIF14){
     	toggle_A++;
-        EXTI->PR1 = EXTI_PR1_PIF14;
+        EXTI->PR1 = EXTI_PR1_PIF14; //Zet de flag terug laag, anders gaat hij terug in die direct interrupt na dat die gedaan is.
     }
 
     if(EXTI->PR1 & EXTI_PR1_PIF13){
