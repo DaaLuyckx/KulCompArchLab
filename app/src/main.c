@@ -3,9 +3,6 @@
  * @version 0.1
  */
 
-//Dit programma was eigenlijk niet de bedoeling, de display moest eigenlijk in de systick en de buttons moesten niet met interrupts.
-//In het ander programma doe ik dit.
-
 #include <stdint.h>
 #include <stm32l4xx.h>
 
