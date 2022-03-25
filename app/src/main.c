@@ -242,7 +242,8 @@ int main(void){
     	// Lees de waarde in
     	int V = ADC1->DR;
     	float R = ((V/3.3f)-1)*10000.0f;
-    	number = (1.0f/((log(R)/10000.0f)/3971.0f)+(1.0f/298.15f))-237.15f;
+    	number = (1.0f/((log(R/10000.0f)/3971.0f)+(1.0f/298.15f)))-237.15f;
+    	delay(5000000);
 
     }
 
