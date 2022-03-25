@@ -10,7 +10,7 @@
 int tick = 0;
 int splitted_number[4] = {0};
 int toggle =0;
-int number = 0;
+float number;
 
 void delay(unsigned int n){  //deze sebiet is testen.
 	volatile unsigned int delay = n;
@@ -89,30 +89,16 @@ void split_number(int n){
 		splitted_number[3] = unit;
 }
 
-
-void check_clock(int* n){
-	//Dit stukje is omdat het een klok is (max waarden van de 'minuten, en 'uren' aanpassen)
-		if (splitted_number[2] == 6 && splitted_number[3] == 0){
-			splitted_number[2] = 0;
-			splitted_number[1]++;
-
-		}
-		if (splitted_number[0] == 2 && splitted_number[1] == 4){
-			splitted_number[0] = 0;
-			splitted_number[1] = 0;
-		}
-}
-
 void SysTick_Handler(void){
     tick++;
     split_number(number);
-    check_clock(splitted_number);
     switch(toggle){
     case 0:
     	//00
     	clear_segments();
     	GPIOA-> ODR &= ~GPIO_ODR_OD8;
     	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
     	segments(splitted_number[0]);
     	toggle++;
     	break;
@@ -121,6 +107,7 @@ void SysTick_Handler(void){
     	clear_segments();
     	GPIOA-> ODR |= GPIO_ODR_OD8;
     	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
     	segments(splitted_number[1]);
     	toggle++;
     	break;
@@ -129,6 +116,7 @@ void SysTick_Handler(void){
     	clear_segments();
     	GPIOA-> ODR &= ~GPIO_ODR_OD8;
     	GPIOA-> ODR |= GPIO_ODR_OD15;
+    	GPIOA-> ODR |= GPIO_ODR_OD6; //puntje
     	segments(splitted_number[2]);
     	toggle++;
     	break;
@@ -137,14 +125,11 @@ void SysTick_Handler(void){
     	clear_segments();
     	GPIOA-> ODR |= GPIO_ODR_OD8;
     	GPIOA-> ODR |= GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
     	segments(splitted_number[3]);
     	toggle = 0;
     }
 	number = (splitted_number[0]*1000+splitted_number[1]*100+splitted_number[2]*10+splitted_number[3]);
-    if(tick == 60000){
-    	number++;
-    	tick = 0;
-    }
 }
 
 int main(void){
@@ -179,8 +164,8 @@ int main(void){
 
 	// Kanaal (6) instellen
 	ADC1->SMPR1 |= ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2; //(111, traagste samplefrequentie.. beste)
-	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3);
-	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //0101 (5 binair)
+	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3); //(lengte' aantal in te lezen kanalen (1= 000)
+	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
 
 	//segmenten
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
@@ -210,6 +195,10 @@ int main(void){
 	GPIOB->MODER &= ~GPIO_MODER_MODE2_Msk;
 	GPIOB->MODER |= GPIO_MODER_MODE2_0;
 	GPIOB->OTYPER &= ~GPIO_OTYPER_OT2;
+	//puntje
+	GPIOA->MODER &= ~GPIO_MODER_MODE6_Msk;
+	GPIOA->MODER |= GPIO_MODER_MODE6_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT6;
 
 	//multiplexer
 	GPIOA->MODER &= ~GPIO_MODER_MODE8_Msk;
@@ -240,10 +229,13 @@ int main(void){
     	while(!(ADC1->ISR & ADC_ISR_EOS));
 
     	// Lees de waarde in
-    	int V = ADC1->DR;
-    	float R = ((V/3.3f)-1)*10000.0f;
-    	number = (1.0f/((log(R/10000.0f)/3971.0f)+(1.0f/298.15f)))-237.15f;
-    	delay(5000000);
+    	float Raw = ADC1->DR;
+    	float V = (Raw*3.0f)/4096.0f;
+    	float R = (10000.0f*V)/(3.0f-V);
+    	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
+    	number *= 10;
+
+
 
     }
 
