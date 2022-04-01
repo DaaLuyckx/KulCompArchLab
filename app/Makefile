@@ -134,3 +134,7 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
+
+
+FPU = -mfpu=fpv4-sp-d16
+FLOAT-ABI = -mfloat-abi=soft
