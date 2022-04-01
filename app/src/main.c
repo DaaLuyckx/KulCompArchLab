@@ -11,9 +11,8 @@ int tick = 0;
 int splitted_number[4] = {0};
 int toggle =0;
 float number;
-int i = 0;
 float Raw_POT = 0;
-float Raw = 0;
+float Raw_NTC = 0;
 
 void delay(unsigned int n){  //deze sebiet is testen.
 	volatile unsigned int delay = n;
@@ -170,6 +169,8 @@ int main(void){
 	ADC1->CR |= ADC_CR_ADEN;
 
 	// Kanaal (6) instellen
+	ADC1->SMPR1 |= ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2; //(111, traagste samplefrequentie.. beste)
+	ADC1->SMPR1 |= ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2; //(111, traagste samplefrequentie.. beste)
 	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3); //(lengte' aantal in te lezen kanalen (1= 0000)
 
 	// TIMER
@@ -251,28 +252,31 @@ int main(void){
     NVIC_EnableIRQ(SysTick_IRQn);
 
     while(1){
-    	//NTC
-    	ADC1->SMPR1 |= ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2; //(111, traagste samplefrequentie.. beste)
-    	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
-    	ADC1->SQR1 &= ~ADC_SQR1_SQ1_1; //bit 1 op 0 zetten (zie verschil buzzer)
-    	// Start de ADC en wacht tot de sequentie klaar is
-    	ADC1->CR |= ADC_CR_ADSTART;
-    	while(!(ADC1->ISR & ADC_ISR_EOS));
-    	// Lees de waardes in
-    	Raw = ADC1->DR;
-    	float V = (Raw*3.0f)/4096.0f;
-    	float R = (10000.0f*V)/(3.0f-V);
-    	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
-    	number *= 10;
-
     	//BUZZER
-    	ADC1->SMPR1 |= ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2; //(111, traagste samplefrequentie.. beste)
+    	ADC1->SQR1 &= ~ADC_SQR1_SQ1_0; //bit 0 op 0 zetten (zie verschil NTC)
     	ADC1->SQR1 |= (ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2); //00110 (6 binair)
-    	ADC1->SQR1 &= ~ADC_SQR1_SQ1_0 //bit 0 op 0 zetten (zie verschil NTC)
     	// Start de ADC en wacht tot de sequentie klaar is
     	ADC1->CR |= ADC_CR_ADSTART;
     	while(!(ADC1->ISR & ADC_ISR_EOS));
     	Raw_POT = ADC1->DR;
+
+    	delay(200);
+
+    	//NTC
+    	ADC1->SQR1 &= ~ADC_SQR1_SQ1_1; //bit 1 op 0 zetten (zie verschil buzzer)
+    	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
+    	// Start de ADC en wacht tot de sequentie klaar is
+    	ADC1->CR |= ADC_CR_ADSTART;
+    	while(!(ADC1->ISR & ADC_ISR_EOS));
+    	// Lees de waardes in
+    	Raw_NTC = ADC1->DR;
+    	float V = (Raw_NTC*3.0f)/4096.0f;
+    	float R = (10000.0f*V)/(3.0f-V);
+    	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
+    	number *= 10;
+
+    	delay(200);
+
 
     	/*if( Raw_POT < Raw){
     		TIM16->BDTR |= TIM_BDTR_MOE;
