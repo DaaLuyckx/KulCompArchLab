@@ -165,7 +165,7 @@ int main(void){
 	// Kanaal (6) instellen
 	ADC1->SMPR1 |= ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2; //(111, traagste samplefrequentie.. beste)
 	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3); //(lengte' aantal in te lezen kanalen (1= 000)
-	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
+
 
 	//segmenten
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
@@ -224,6 +224,7 @@ int main(void){
     NVIC_EnableIRQ(SysTick_IRQn);
 
     while(1){
+    	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
     	// Start de ADC en wacht tot de sequentie klaar is
     	ADC1->CR |= ADC_CR_ADSTART;
     	while(!(ADC1->ISR & ADC_ISR_EOS));
