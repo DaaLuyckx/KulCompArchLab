@@ -260,7 +260,7 @@ int main(void){
     	while(!(ADC1->ISR & ADC_ISR_EOS));
     	Raw_POT = ADC1->DR;
 
-    	delay(1000);
+    	delay(200);
 
     	//NTC
     	ADC1->SQR1 &= ~ADC_SQR1_SQ1_1; //bit 1 op 0 zetten (zie verschil buzzer)
@@ -275,7 +275,7 @@ int main(void){
     	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
     	number *= 10;
 
-    	delay(1000);
+    	delay(200);
 
 
     	/*if( Raw_POT < Raw){
