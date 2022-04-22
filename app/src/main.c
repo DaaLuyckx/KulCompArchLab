@@ -7,6 +7,7 @@
 #include <stm32l4xx.h>
 #include <math.h>
 
+#include "../lib/stm32l452xx.h"
 int tick = 0;
 int splitted_number[4] = {0};
 int toggle =0;
@@ -257,7 +258,7 @@ int main(void){
     	ADC1->SQR1 |= (ADC_SQR1_SQ1_1 | ADC_SQR1_SQ1_2); //00110 (6 binair)
     	// Start de ADC en wacht tot de sequentie klaar is
     	ADC1->CR |= ADC_CR_ADSTART;
-    	while(!(ADC1->ISR & ADC_ISR_EOS));
+    	while(!(ADC1->ISR & ADC_ISR_EOC));  //EOC gebruiken! da zorgt ervoor da alles is afgrond, EOS zorgt er alleen voor dat de sampling is afgrond, dus kunnen ze in elkaar zitten.
     	Raw_POT = ADC1->DR;
 
     	delay(200);
@@ -267,7 +268,7 @@ int main(void){
     	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
     	// Start de ADC en wacht tot de sequentie klaar is
     	ADC1->CR |= ADC_CR_ADSTART;
-    	while(!(ADC1->ISR & ADC_ISR_EOS));
+    	while(!(ADC1->ISR & ADC_ISR_EOC));
     	// Lees de waardes in
     	Raw_NTC = ADC1->DR;
     	float V = (Raw_NTC*3.0f)/4096.0f;
@@ -282,7 +283,7 @@ int main(void){
     		TIM16->BDTR |= TIM_BDTR_MOE;
     	}
     	else{
-    	TIM16->BDTR &= TIM_BDTR_MOE;
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
     	}
     }
 
