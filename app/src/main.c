@@ -278,12 +278,12 @@ int main(void){
     	delay(200);
 
 
-    	/*if( Raw_POT < Raw){
+    	if( Raw_POT > Raw_NTC){
     		TIM16->BDTR |= TIM_BDTR_MOE;
     	}
     	else{
     	TIM16->BDTR &= TIM_BDTR_MOE;
-    	}*/
+    	}
     }
 
 }
