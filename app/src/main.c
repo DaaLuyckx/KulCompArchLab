@@ -279,7 +279,7 @@ int main(void){
     	delay(200);
 
 
-    	if( Raw_POT > Raw_NTC){
+    	if( Raw_POT > Raw_NTC){ //Er zit een inversie in omdat de spanning naar beneden gaat bij een vergroting.
     		TIM16->BDTR |= TIM_BDTR_MOE;
     	}
     	else{
