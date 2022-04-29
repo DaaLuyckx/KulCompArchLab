@@ -388,8 +388,6 @@ int main(void){
     		TIM16->CCR1 = C/2;
     		delay(10000000);
 
-
-
     	}
     	else{
     		TIM16->BDTR &= ~TIM_BDTR_MOE;
