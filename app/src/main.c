@@ -12,7 +12,7 @@ int splitted_number[4] = {0};
 int toggle =0;
 float number;
 
-void delay(unsigned int n){  //deze sebiet is testen.
+void delay(unsigned int n){
 	volatile unsigned int delay = n;
 	while (delay--);
 }
@@ -229,12 +229,12 @@ int main(void){
     	ADC1->CR |= ADC_CR_ADSTART;
     	while(!(ADC1->ISR & ADC_ISR_EOS));
 
-    	// Lees de waarde in
+    	// Lees de waarde in en maak conversie.
     	float Raw = ADC1->DR;
     	float V = (Raw*3.0f)/4096.0f;
     	float R = (10000.0f*V)/(3.0f-V);
     	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
-    	number *= 10;
+    	number *= 10; // 1 cijfer na de komma displayen
     }
 
 }
