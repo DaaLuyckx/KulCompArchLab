@@ -15,7 +15,16 @@ float number;
 float Raw_POT = 0;
 float Raw_NTC = 0;
 
-void delay(unsigned int n){  //deze sebiet is testen.
+int A = 54545;
+int B = 48583;
+int C = 45889;
+int D = 40886;
+int E = 36419;
+int F = 34384;
+int G = 30612;
+int A2 = 27273;
+
+void delay(unsigned int n){
 	volatile unsigned int delay = n;
 	while (delay--);
 }
@@ -186,8 +195,6 @@ int main(void){
 
 
 	TIM16->PSC = 0;
-	TIM16->ARR = 24000;
-	TIM16->CCR1 = 12000;
 
 	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
 	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
@@ -261,8 +268,6 @@ int main(void){
     	while(!(ADC1->ISR & ADC_ISR_EOC));  //EOC gebruiken! da zorgt ervoor da alles is afgrond, EOS zorgt er alleen voor dat de sampling is afgrond, dus kunnen ze in elkaar zitten.
     	Raw_POT = ADC1->DR;
 
-    	delay(200);
-
     	//NTC
     	ADC1->SQR1 &= ~ADC_SQR1_SQ1_1; //bit 1 op 0 zetten (zie verschil buzzer)
     	ADC1->SQR1 |= (ADC_SQR1_SQ1_0 | ADC_SQR1_SQ1_2); //00101 (5 binair)
@@ -276,14 +281,120 @@ int main(void){
     	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
     	number *= 10;
 
-    	delay(200);
-
-
     	if( Raw_POT > Raw_NTC){ //Er zit een inversie in omdat de spanning naar beneden gaat bij een vergroting.
     		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = C;
+    		TIM16->CCR1 = C/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = C;
+    		TIM16->CCR1 = C/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = G;
+    		TIM16->CCR1 = G/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = G;
+    		TIM16->CCR1 = G/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = A2;
+    		TIM16->CCR1 = A2/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = A2;
+    		TIM16->CCR1 = A2/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR =G;
+    		TIM16->CCR1 = G/2;
+    		delay(10000000);
+
+    		TIM16->ARR = F;
+    		TIM16->CCR1 = F/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = F;
+    		TIM16->CCR1 = F/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = E;
+    		TIM16->CCR1 = E/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = E;
+    		TIM16->CCR1 = E/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = D;
+    		TIM16->CCR1 = D/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = D;
+    		TIM16->CCR1 = D/2;
+    		delay(5000000);
+
+    		TIM16->BDTR &= ~TIM_BDTR_MOE;
+    		delay(1000000);
+    		TIM16->BDTR |= TIM_BDTR_MOE;
+
+    		TIM16->ARR = C;
+    		TIM16->CCR1 = C/2;
+    		delay(10000000);
+
+
+
     	}
     	else{
     		TIM16->BDTR &= ~TIM_BDTR_MOE;
+
+
     	}
     }
 
