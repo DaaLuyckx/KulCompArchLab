@@ -187,20 +187,22 @@ int main(void){
 	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3); //(lengte' aantal in te lezen kanalen (1= 0000)
 
 	// Configureren GPIO
-	GPIOB->MODER &= ~GPIO_MODER_MODE8_Msk;
-	GPIOB->MODER |=  GPIO_MODER_MODE8_1;
-	GPIOB->OTYPER &= ~GPIO_OTYPER_OT8;
-	GPIOB->AFR[1] = (GPIOB->AFR[1] & (~GPIO_AFRH_AFSEL8_Msk)) | (0xE << GPIO_AFRH_AFSEL8_Pos);
+	GPIOB->MODER &= ~GPIO_MODER_MODE8_Msk; //Alle bits van pin8 (blok B) laag maken.
+	GPIOB->MODER |=  GPIO_MODER_MODE8_1; //Bit 1 van pin 8 hoog maken (alternate function modus)
+	GPIOB->OTYPER &= ~GPIO_OTYPER_OT8;	//Laag zetten voor push-pull
+	GPIOB->AFR[1] = (GPIOB->AFR[1] & (~GPIO_AFRH_AFSEL8_Msk)) | (0xE << GPIO_AFRH_AFSEL8_Pos); //Alternate function register gebruiken we om de juiste functie te selecteren
 
 	//Instellen timer hoofdteller
-	TIM16->PSC = 0;
+	TIM16->PSC = 0; //Prescaler contains the value to be loaded in the active prescaler register at each update event
 
 	//Instellen timer, capture & compare
-	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
+	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S; //CC1S: caputure/compare 1 selectie, hier 00 wilt zeggen -> channel configured as output.
 	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
-	TIM16->CCER |= TIM_CCER_CC1E;
-	TIM16->CCER &= ~TIM_CCER_CC1P;
-	TIM16->CR1 |= TIM_CR1_CEN;
+	//OC1M: deze bits definieren het gedrag van het output ref. signal. Bit 1 en 2 zijn hier hoog, -> ingesteld als toggle.
+	//OC1FE: hoog wilt zeggen dat output compare 1 fast enable waar is, deze bit wordt gebruikt om het effect te versnellen van een event.
+	TIM16->CCER |= TIM_CCER_CC1E; //CCER: capture/compare enable register: CC1E hoog -> capture/Compare 1 output enabled.
+	TIM16->CCER &= ~TIM_CCER_CC1P;//CC1P laag -> Capture/Compare 1 output polarity active high.
+	TIM16->CR1 |= TIM_CR1_CEN; //CR1:control register 1: CEN hoog -> counter enabled.
 
 	//segmenten
 	GPIOB->MODER &= ~GPIO_MODER_MODE0_Msk;
