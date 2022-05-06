@@ -15,7 +15,6 @@ float number;
 float Raw_POT = 0;
 float Raw_NTC = 0;
 
-//Hier maak ik mijn noten aan om later een nummer te schrijven: Vb: A= (48*10^6)/880(frequentie la) = 54545
 int A = 54545;
 int B = 48583;
 int C = 45889;
@@ -103,7 +102,6 @@ void split_number(int n){
 }
 
 void SysTick_Handler(void){
-	//Stuurt display aan.
     tick++;
     split_number(number);
     switch(toggle){
@@ -151,7 +149,6 @@ int main(void){
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
-	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
 	// Klok selecteren, hier gebruiken we sysclk
 	RCC->CCIPR &= ~RCC_CCIPR_ADCSEL_Msk;
@@ -181,25 +178,29 @@ int main(void){
 	// ADC aanzetten
 	ADC1->CR |= ADC_CR_ADEN;
 
-	// Kanaal (5,6) instellen
+	// Kanaal (6) instellen
 	ADC1->SMPR1 |= ADC_SMPR1_SMP5_0 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_2; //(111, traagste samplefrequentie.. beste)
 	ADC1->SMPR1 |= ADC_SMPR1_SMP6_0 | ADC_SMPR1_SMP6_1 | ADC_SMPR1_SMP6_2; //(111, traagste samplefrequentie.. beste)
 	ADC1->SQR1 &= ~(ADC_SQR1_L_0 | ADC_SQR1_L_1 | ADC_SQR1_L_2 | ADC_SQR1_L_3); //(lengte' aantal in te lezen kanalen (1= 0000)
 
-	// Configureren GPIO
+	// TIMER
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+
+
 	GPIOB->MODER &= ~GPIO_MODER_MODE8_Msk;
 	GPIOB->MODER |=  GPIO_MODER_MODE8_1;
 	GPIOB->OTYPER &= ~GPIO_OTYPER_OT8;
 	GPIOB->AFR[1] = (GPIOB->AFR[1] & (~GPIO_AFRH_AFSEL8_Msk)) | (0xE << GPIO_AFRH_AFSEL8_Pos);
 
-	//Instellen timer hoofdteller
+
 	TIM16->PSC = 0;
 
-	//Instellen timer, capture & compare
 	TIM16->CCMR1 &= ~TIM_CCMR1_CC1S;
 	TIM16->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1FE;
 	TIM16->CCER |= TIM_CCER_CC1E;
 	TIM16->CCER &= ~TIM_CCER_CC1P;
+	//TIM16->BDTR |= TIM_BDTR_MOE;
 	TIM16->CR1 |= TIM_CR1_CEN;
 
 	//segmenten
@@ -273,15 +274,14 @@ int main(void){
     	// Start de ADC en wacht tot de sequentie klaar is
     	ADC1->CR |= ADC_CR_ADSTART;
     	while(!(ADC1->ISR & ADC_ISR_EOC));
-    	// Zet ruwe weerstandswaarde om naar temperatuur
+    	// Lees de waardes in
     	Raw_NTC = ADC1->DR;
     	float V = (Raw_NTC*3.0f)/4096.0f;
     	float R = (10000.0f*V)/(3.0f-V);
     	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
-    	number *= 10; //zorgt voor de gevraagde afronding van 0.1°C
+    	number *= 10;
 
     	if( Raw_POT > Raw_NTC){ //Er zit een inversie in omdat de spanning naar beneden gaat bij een vergroting.
-    		//Logica om liedje af te spelen, hiervoor zou ook een lus kunnen worden gebruikt met de noten en vertragingen in een lijst, maar dit vereiste onnodig extra werk voor een kort stukje.
     		TIM16->BDTR |= TIM_BDTR_MOE;
 
     		TIM16->ARR = C;
@@ -386,10 +386,7 @@ int main(void){
 
     		TIM16->ARR = C;
     		TIM16->CCR1 = C/2;
-    		delay(1000000);
-
-    		TIM16->BDTR &= ~TIM_BDTR_MOE;
-    		delay(100000);
+    		delay(10000000);
 
     	}
     	else{
