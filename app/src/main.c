@@ -9,19 +9,7 @@
 #include <stdio.h>
 
 int tick = 0;
-int splitted_number[4] = {0};
-int toggle =0;
-float number;
-
-/*void delay(unsigned int n){
-	volatile unsigned int delay = n;
-	while (delay !=0){
-		if(tick){
-			delay--;
-			tick = 0;
-		}
-	}
-}*/
+//float number;
 
 void delay(unsigned int n){
 	volatile unsigned int delay = n;
@@ -96,16 +84,19 @@ int main(void){
     NVIC_EnableIRQ(SysTick_IRQn);
 
     while(1){
-    	// Lees de waarde in en maak conversie.
-    	float Raw = readNTC();
-    	float V = (Raw*3.0f)/4096.0f;
-    	float R = (10000.0f*V)/(3.0f-V);
-    	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
+    	if(tick == 1000){ // Elke seconde meten en displayen
+			// Lees de waarde in en maak conversie.
+			float Raw = readNTC();
+			float V = (Raw*3.0f)/4096.0f;
+			float R = (10000.0f*V)/(3.0f-V);
+			float number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
 
-    	printf("T=%.1fºC\n",number); // @suppress("Float formatting support")
-    	// '\r' hoeft niet op linux/mac
+			printf("T=%.1fºC\n",number); // @suppress("Float formatting support")
+			// '\r' hoeft niet op linux/mac
 
-    	delay(10000000); //1 meting per seconde (ongeveer)
+			tick = 0;
+    	}
+
     }
 
 }
