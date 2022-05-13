@@ -103,6 +103,7 @@ int main(void){
     	number = (1.0f/((logf(R/10000.0f)/3936.0f)+(1.0f/298.15f)))-273.15f;
 
     	printf("T=%.1fºC\n",number); // @suppress("Float formatting support")
+    	// '\r' hoeft niet op linux/mac
 
     	delay(10000000); //1 meting per seconde (ongeveer)
     }
