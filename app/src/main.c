@@ -20,11 +20,126 @@ void delay(unsigned int n){
 	}
 }
 
-void SysTick_Handler(void){tick++;}
-
 int __io_putchar(int ch){
     while(!(USART1->ISR & USART_ISR_TXE));
     USART1->TDR = ch;
+}
+
+void segments(int n){
+
+//Hier zeg ik welke segmenten moeten aangaan bij welk cijfer.
+	switch (n){
+		case 0:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1);
+			break;
+
+		case 1:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			break;
+
+		case 2:
+			GPIOA->ODR |= (GPIO_ODR_OD7);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD2);
+			break;
+
+		case 3:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD2);
+			break;
+
+		case 4:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD1 | GPIO_ODR_OD2);
+			break;
+
+		case 5:
+			GPIOA->ODR |= (GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+			break;
+
+		case 6:
+			GPIOA->ODR |= (GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+			break;
+
+		case 7:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0);
+			break;
+
+		case 8:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+			break;
+
+		case 9:
+			GPIOA->ODR |= (GPIO_ODR_OD7 | GPIO_ODR_OD5);
+			GPIOB->ODR |= (GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+			break;
+	}
+}
+
+void clear_segments(){
+//Alle segmenten worden uitgezet.
+	GPIOA->ODR &= ~(GPIO_ODR_OD7 | GPIO_ODR_OD5);
+	GPIOB->ODR &= ~(GPIO_ODR_OD0 | GPIO_ODR_OD12 | GPIO_ODR_OD15 | GPIO_ODR_OD1 | GPIO_ODR_OD2);
+}
+
+void split_number(int n){
+	// Zet het getal om in de segmenten per module
+		int thousand = (n/1000)%10;
+		int hundred = (n/100)%10;
+		int ten = (n/10)%10;
+		int unit = n%10;
+		splitted_number[0] = thousand;
+		splitted_number[1] = hundred;
+		splitted_number[2] = ten;
+		splitted_number[3] = unit;
+}
+
+void SysTick_Handler(void){
+	//Stuurt display aan.
+    tick++;
+    split_number(hoek);
+    switch(toggle){
+    case 0:
+    	//00
+    	clear_segments();
+    	GPIOA-> ODR &= ~GPIO_ODR_OD8;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
+    	segments(splitted_number[0]);
+    	toggle++;
+    	break;
+    case 1:
+    	//01
+    	clear_segments();
+    	GPIOA-> ODR |= GPIO_ODR_OD8;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
+    	segments(splitted_number[1]);
+    	toggle++;
+    	break;
+    case 2:
+    	//10
+    	clear_segments();
+    	GPIOA-> ODR &= ~GPIO_ODR_OD8;
+    	GPIOA-> ODR |= GPIO_ODR_OD15;
+    	GPIOA-> ODR |= GPIO_ODR_OD6; //puntje
+    	segments(splitted_number[2]);
+    	toggle++;
+    	break;
+    case 3:
+    	//11
+    	clear_segments();
+    	GPIOA-> ODR |= GPIO_ODR_OD8;
+    	GPIOA-> ODR |= GPIO_ODR_OD15;
+    	GPIOA-> ODR &= ~GPIO_ODR_OD6;
+    	segments(splitted_number[3]);
+    	toggle = 0;
+    }
+	hoek = (splitted_number[0]*1000+splitted_number[1]*100+splitted_number[2]*10+splitted_number[3]);
 }
 
 void Write_I2S_Accel(int data, int reg){
