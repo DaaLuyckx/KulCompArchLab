@@ -1,14 +1,12 @@
 /**
  * @file main.c
  * @version 0.1
- *
  */
 
 #include <stdint.h>
 #include <stm32l4xx.h>
 #include <math.h>
 
-int mux = 0;
 int tick = 0;
 double hoek = 0;
 
@@ -22,71 +20,70 @@ void delay(unsigned int n){
 	}
 }
 
-void SysTick_Handler(void){
-	tick++;
-	mux++;
-}
+void SysTick_Handler(void){tick++;}
 
 int __io_putchar(int ch){
     while(!(USART1->ISR & USART_ISR_TXE));
     USART1->TDR = ch;
 }
 
-void write_accel(int data, int reg){
-	    I2C1->CR2 &= ~(1<<10);//enable write mode
+void Write_I2S_Accel(int data, int reg){
+	    I2C1->CR2 &= ~(1<<10); //Enable write mode
 		I2C1->CR2 |= I2C_CR2_NACK_Msk;
-	    I2C1->CR2 |=  (1 << 13)|(2 << 16)|(0x53 << 1); //grote te verzende paket, conencted device,
+	    I2C1->CR2 |=  (1 << 13)|(2 << 16)|(0x53 << 1); //Grote pakket, connected device,
 	    while((I2C1->ISR & (1<<4)) == 0 && (I2C1->ISR & (1<<1)) == 0);
-	     //NACKF = 0, TXIS = 0
+	    //NACKF = 0, TXIS = 0
 	    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
 	        return;
 	    }
 
-	    I2C1->TXDR = reg;//register doorsturen
+	    I2C1->TXDR = reg; //Register doorsturen
 
 	    while(I2C1->ISR & (1<<4) == 0 && I2C1->ISR & (1<<1) == 0){};
-	         //NACKF = 0, TXIS = 0
+	    //NACKF = 0, TXIS = 0
 	    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
 	        return;
 	    }
+
 	    I2C1->TXDR = data;
 		while((I2C1->ISR & I2C_ISR_STOPF) == 0);
 }
 
-int read_accel(int reg){
+int Read_I2S_Accel(int reg){
 	while((I2C1->ISR & I2C_ISR_BUSY));
-	I2C1->CR2 &= ~(1<<10);//enable write mode
+	I2C1->CR2 &= ~(1<<10); //Enable write mode
 	I2C1->CR2 &= ~I2C_CR2_AUTOEND_Msk;
 	I2C1->CR2 &= ~I2C_CR2_NBYTES_Msk;
 	I2C1->CR2 |= I2C_CR2_NACK_Msk;
-	I2C1->CR2 |=  (1 << 13)|(1 << 16)|(0x53 << 1); //grote te verzende paket, conencted device,
+	I2C1->CR2 |=  (1 << 13)|(1 << 16)|(0x53 << 1); //Grote pakket, connected device,
 	while(((I2C1->ISR & (1<<4)) == 0) && ((I2C1->ISR & (1<<1)) == 0)){};
-	 //NACKF = 0, TXIS = 0
+	//NACKF = 0, TXIS = 0
 	if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
 		return;
 	}
 
-	I2C1->TXDR = reg;//register doorsturen
+	I2C1->TXDR = reg; //Register doorsturen
 	while((I2C1->ISR & (1<<6)) == 0);
 
 
 	I2C1->CR2 |= I2C_CR2_AUTOEND_Msk;
-	I2C1->CR2 |= (1<<10);//enable read mode
-	//read
-	I2C1->CR2 |=  (1 << 16)|(0x53 << 1); //grote te verzende paket, conencted device,
+	I2C1->CR2 |= (1<<10); //Enable read mode
+	//Read
+	I2C1->CR2 |=  (1 << 16)|(0x53 << 1);
 	I2C1->CR2 |= (1<<13);
 	while(!(I2C1->ISR & I2C_ISR_RXNE));
 
 	return I2C1->RXDR;
-
 }
 
 int main(void) {
+	//Klok
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;		// enable IO port C clock -- clock activeren voor GPIO C
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
+	//GPIO
     GPIOA->MODER &= ~GPIO_MODER_MODE9_Msk;
     GPIOA->MODER |=  GPIO_MODER_MODE9_1;
     GPIOA->OTYPER &= ~GPIO_OTYPER_OT9;
@@ -101,15 +98,12 @@ int main(void) {
     USART1->BRR = 417;
     USART1->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 
-	// CPU Frequentie = 48 MHz
-	// Systick interrupt elke 1 ms (1kHz)  --> 48000000 Hz / 1000 Hz --> Reload = 48000
+	//Systick
 	SysTick_Config(48000);
-
-	// Interrupt aanzetten met een prioriteit van 128
 	NVIC_SetPriority(SysTick_IRQn, 128);
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	// I2C
+	//I2C
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
 
@@ -127,13 +121,14 @@ int main(void) {
 	I2C1->CR2 |= (I2C_CR2_AUTOEND | I2C_CR2_NACK);
 	I2C1->CR1 |= I2C_CR1_PE;
 
+	//Array
 	volatile int16_t array[3];
-	write_accel(1<<3,0x2D);
-	array[0] =  read_accel(0x2D);
+	Write_I2S_Accel(1<<3,0x2D);
+	array[0] =  Read_I2S_Accel(0x2D);
 
     while (1) {
     	for (int i = 0; i<3; i++){
-			array[i] = read_accel(0x32+i*2)<<8+read_accel(0x32+i*2+1);
+			array[i] = Read_I2S_Accel(0x32+i*2)<<8+Read_I2S_Accel(0x32+i*2+1);
 		}
 
     	int xy = sqrt(array[0]^2+array[1]^2);
