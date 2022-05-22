@@ -8,6 +8,8 @@
 #include <math.h>
 
 int tick = 0;
+int splitted_number[4] = {0};
+int toggle =0;
 double hoek = 0;
 
 void delay(unsigned int n){
@@ -291,10 +293,8 @@ int main(void) {
     	int xy = sqrt(array[0]^2+array[1]^2);
 		int xyz = sqrt(xy^2+array[2]^2);
 		hoek = (acos(array[2]/(sqrt(array[0]*array[0]+array[1]*array[1]+array[2]*array[2]))))*(180/3.14);
+		hoek *= 10; //Displayt de hoek als xxx.x graden. 1 cijfer na de komma dus
 
-    	printf("%2.2f",hoek);
-    	printf("\n\r");
-
-    	delay(1000);
+    	delay(300); //Refresht elke 300 miliseconden
     }
 }
