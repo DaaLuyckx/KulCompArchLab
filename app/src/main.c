@@ -28,7 +28,6 @@ int __io_putchar(int ch){
 }
 
 void segments(int n){
-
 //Hier zeg ik welke segmenten moeten aangaan bij welk cijfer.
 	switch (n){
 		case 0:
@@ -90,14 +89,14 @@ void clear_segments(){
 
 void split_number(int n){
 	// Zet het getal om in de segmenten per module
-		int thousand = (n/1000)%10;
-		int hundred = (n/100)%10;
-		int ten = (n/10)%10;
-		int unit = n%10;
-		splitted_number[0] = thousand;
-		splitted_number[1] = hundred;
-		splitted_number[2] = ten;
-		splitted_number[3] = unit;
+	int thousand = (n/1000)%10;
+	int hundred = (n/100)%10;
+	int ten = (n/10)%10;
+	int unit = n%10;
+	splitted_number[0] = thousand;
+	splitted_number[1] = hundred;
+	splitted_number[2] = ten;
+	splitted_number[3] = unit;
 }
 
 void SysTick_Handler(void){
@@ -145,25 +144,25 @@ void SysTick_Handler(void){
 }
 
 void Write_I2S_Accel(int data, int reg){
-	    I2C1->CR2 &= ~(1<<10); //Enable write mode
-		I2C1->CR2 |= I2C_CR2_NACK_Msk;
-	    I2C1->CR2 |=  (1 << 13)|(2 << 16)|(0x53 << 1); //Grote pakket, connected device,
-	    while((I2C1->ISR & (1<<4)) == 0 && (I2C1->ISR & (1<<1)) == 0);
-	    //NACKF = 0, TXIS = 0
-	    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
-	        return;
-	    }
+	I2C1->CR2 &= ~(1<<10); //Enable write mode
+	I2C1->CR2 |= I2C_CR2_NACK_Msk;
+    I2C1->CR2 |=  (1 << 13)|(2 << 16)|(0x53 << 1); //Grote pakket, connected device,
+    while((I2C1->ISR & (1<<4)) == 0 && (I2C1->ISR & (1<<1)) == 0);
+    //NACKF = 0, TXIS = 0
+    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
+        return;
+    }
 
-	    I2C1->TXDR = reg; //Register doorsturen
+    I2C1->TXDR = reg; //Register doorsturen
 
-	    while(I2C1->ISR & (1<<4) == 0 && I2C1->ISR & (1<<1) == 0){};
-	    //NACKF = 0, TXIS = 0
-	    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
-	        return;
-	    }
+    while(I2C1->ISR & (1<<4) == 0 && I2C1->ISR & (1<<1) == 0){};
+    //NACKF = 0, TXIS = 0
+    if((I2C1->ISR & (1<<4)) != 0){ //NACKF = 1
+        return;
+    }
 
-	    I2C1->TXDR = data;
-		while((I2C1->ISR & I2C_ISR_STOPF) == 0);
+    I2C1->TXDR = data;
+	while((I2C1->ISR & I2C_ISR_STOPF) == 0);
 }
 
 int Read_I2S_Accel(int reg){
@@ -287,11 +286,9 @@ int main(void) {
 
     while (1) {
     	for (int i = 0; i<3; i++){
-			array[i] = Read_I2S_Accel(0x32+i*2)<<8+Read_I2S_Accel(0x32+i*2+1);
+			array[i] = Read_I2S_Accel(0x32+i*2)<<(8+Read_I2S_Accel(0x32+i*2+1));
 		}
 
-    	int xy = sqrt(array[0]^2+array[1]^2);
-		int xyz = sqrt(xy^2+array[2]^2);
 		hoek = (acos(array[2]/(sqrt(array[0]*array[0]+array[1]*array[1]+array[2]*array[2]))))*(180/3.14);
 		hoek *= 10; //Displayt de hoek als xxx.x graden. 1 cijfer na de komma dus
 
